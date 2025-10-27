@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "900899630281",
+    "project_id": "the-guild-fc0de",
+    "storage_bucket": "the-guild-fc0de.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:900899630281:android:09d58910f7b8abb800f118",
+        "android_client_info": {
+          "package_name": "com.example.the_guild"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "900899630281-f9fc5bjic55lk00gh7j5p179bshcprrc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0KmCKXP60WSGtFD3Jq176xFGwQUEdZiY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "900899630281-f9fc5bjic55lk00gh7j5p179bshcprrc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

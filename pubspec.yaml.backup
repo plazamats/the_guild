@@ -1,0 +1,40 @@
+name: the_guild
+description: The Guild - Jobs & Entrepreneurs Community App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  google_fonts: ^6.2.1
+  # Animation package
+  lottie: ^2.7.0
+  # Image handling
+  cached_network_image: ^3.3.0
+  # UI enhancements
+  shimmer: ^3.0.0
+  # Firebase Core (required)
+  firebase_core: ^2.24.0
+  # Firebase Services (choose what you need)
+  cloud_firestore: ^4.13.0
+  firebase_auth: ^4.17.0
+  firebase_storage: ^11.5.0
+  # Add more Firebase products as needed:
+  # firebase_analytics: ^10.7.0
+  # firebase_messaging: ^14.7.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/animations/
+    - assets/icons/
