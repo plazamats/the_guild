@@ -1,4 +1,3 @@
-// Full updated code with ONLY the requested features added
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
@@ -13,7 +12,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase
+ 
+  // Initializing Firebase
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -60,7 +60,7 @@ class AppUser {
   final String? location;
   final List<String> skills;
   final String userType;
-  final String? bio; // <<<< ADDED bio field
+  final String? bio; 
   final Timestamp? createdAt;
 
   AppUser({
@@ -103,13 +103,13 @@ class AppUser {
       'location': location,
       'skills': skills,
       'userType': userType,
-      'bio': bio, // <<<<
+      'bio': bio, 
       'createdAt': createdAt,
     };
   }
 }
 
-// ========== FIXED JOB MODEL - MATCHES YOUR FIRESTORE DATA ==========
+// ========== JOB MODEL ==========
 class Job {
   final String id;
   final String title;
@@ -149,7 +149,7 @@ class Job {
     );
   }
 
-  // Helper method to format salary for display
+ 
   String get formattedSalary {
     final min = salaryRange['min'] ?? '0';
     final max = salaryRange['max'] ?? '0';
@@ -165,7 +165,7 @@ class Post {
   final String content;
   final Timestamp timestamp;
   final int likes;
-  final List<String> likedBy; // <<<< track who liked
+  final List<String> likedBy; 
   final List<Comment> comments;
 
   Post({
@@ -176,7 +176,7 @@ class Post {
     required this.content,
     required this.timestamp,
     this.likes = 0,
-    this.likedBy = const [], // <<<<
+    this.likedBy = const [], 
     this.comments = const [],
   });
 
@@ -201,7 +201,7 @@ class Post {
       content: data['content'] ?? 'No content',
       timestamp: data['timestamp'] ?? Timestamp.now(),
       likes: (data['likes'] ?? 0).toInt(),
-      likedBy: List<String>.from(data['likedBy'] ?? []), // <<<<
+      likedBy: List<String>.from(data['likedBy'] ?? []), 
       comments: commentsList,
     );
   }
@@ -214,7 +214,7 @@ class Post {
       'content': content,
       'timestamp': timestamp,
       'likes': likes,
-      'likedBy': likedBy, // <<<<
+      'likedBy': likedBy, 
       'comments': comments.map((comment) => comment.toMap()).toList(),
     };
   }
@@ -227,8 +227,8 @@ class Comment {
   final String content;
   final Timestamp timestamp;
   final int likes;
-  final List<String> likedBy; // <<<<
-  final List<Reply> replies; // <<<<
+  final List<String> likedBy;
+  final List<Reply> replies; 
 
   Comment({
     required this.id,
@@ -319,7 +319,7 @@ class Group {
   final String id;
   final String name;
   final String description;
-  final String category; // 'guild' or 'business'
+  final String category; 
   final String? logoUrl;
   final Color color;
   final int memberCount;
@@ -494,20 +494,18 @@ class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Get current user
+ 
   User? get currentUser => _auth.currentUser;
 
-  // Stream for auth state changes
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Sign in with email and password
   Future<String?> signIn(String email, String password) async {
     try {
       await _auth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
-      return null; // Success
+      return null; 
     } on FirebaseAuthException catch (e) {
       return _getErrorMessage(e.code);
     } catch (e) {
@@ -515,27 +513,26 @@ class FirebaseAuthService {
     }
   }
 
-  // Sign up with email and password
   Future<String?> signUp(String email, String password, String name, String userType) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );
-      // Create user document in Firestore
+  
       await _firestore.collection('users').doc(result.user!.uid).set({
         'id': result.user!.uid,
         'email': email.trim(),
         'name': name,
         'userType': userType,
-        'bio': '', // <<<<
+        'bio': '', 
         'createdAt': FieldValue.serverTimestamp(),
         'profileImage': '',
         'phone': '',
         'location': '',
         'skills': [],
       });
-      return null; // Success
+      return null; 
     } on FirebaseAuthException catch (e) {
       return _getErrorMessage(e.code);
     } catch (e) {
@@ -543,12 +540,10 @@ class FirebaseAuthService {
     }
   }
 
-  // Sign out
   Future<void> signOut() async {
     await _auth.signOut();
   }
 
-  // Get user data from Firestore
   Future<Map<String, dynamic>?> getUserData(String userId) async {
     try {
       DocumentSnapshot doc = await _firestore.collection('users').doc(userId).get();
@@ -558,7 +553,7 @@ class FirebaseAuthService {
     }
   }
 
-  // Update user profile
+
   Future<String?> updateProfile(Map<String, dynamic> updates) async {
     try {
       if (currentUser != null) {
@@ -571,7 +566,7 @@ class FirebaseAuthService {
     }
   }
 
-  // Password reset
+  
   Future<String?> resetPassword(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());
@@ -583,7 +578,6 @@ class FirebaseAuthService {
     }
   }
 
-  // Error message helper
   String _getErrorMessage(String errorCode) {
     switch (errorCode) {
       case 'user-not-found':
@@ -608,7 +602,6 @@ class FirebaseAuthService {
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Users
   Stream<AppUser?> getCurrentUserStream(String userId) {
     return _firestore.collection('users').doc(userId).snapshots().map((doc) {
       if (doc.exists) {
@@ -636,7 +629,6 @@ class FirestoreService {
     await _firestore.collection('users').doc(userId).update(updates);
   }
 
-  // Posts - More flexible parsing
   Stream<List<Post>> getPosts() {
     return _firestore
         .collection('posts')
@@ -649,7 +641,7 @@ class FirestoreService {
           return Post.fromFirestore(doc);
         } catch (e) {
           print('Error parsing post ${doc.id}: $e');
-          // Return a default post if parsing fails
+
           return Post(
             id: doc.id,
             userId: 'unknown',
@@ -681,13 +673,13 @@ class FirestoreService {
 
       final likedBy = List<String>.from((doc.data() as Map<String, dynamic>)['likedBy'] ?? []);
       if (likedBy.contains(userId)) {
-        // Unlike
+  
         await _firestore.collection('posts').doc(postId).update({
           'likes': FieldValue.increment(-1),
           'likedBy': FieldValue.arrayRemove([userId]),
         });
       } else {
-        // Like
+
         await _firestore.collection('posts').doc(postId).update({
           'likes': FieldValue.increment(1),
           'likedBy': FieldValue.arrayUnion([userId]),
@@ -766,7 +758,7 @@ class FirestoreService {
     }
   }
 
-  // ========== FIXED JOBS STREAM - MATCHES YOUR FIRESTORE DATA ==========
+  // =========JOBS STREAM  ==========
   Stream<List<Job>> getJobs() {
     return _firestore
         .collection('jobs')
@@ -779,7 +771,7 @@ class FirestoreService {
           return Job.fromFirestore(doc);
         } catch (e) {
           print('Error parsing job ${doc.id}: $e');
-          // Return a default job if parsing fails
+
           return Job(
             id: doc.id,
             title: 'Job Title',
@@ -796,7 +788,7 @@ class FirestoreService {
     });
   }
 
-  // Groups
+
   Stream<List<Group>> getGroups() {
     return _firestore
         .collection('groups')
@@ -822,7 +814,7 @@ class FirestoreService {
     });
   }
 
-  // Gigs
+
   Stream<List<Gig>> getGigs() {
     return _firestore
         .collection('gigs')
@@ -851,7 +843,6 @@ class FirestoreService {
     });
   }
 
-  // Marketplace Items
   Stream<List<MarketplaceItem>> getMarketplaceItems() {
     return _firestore
         .collection('marketplace')
@@ -881,8 +872,98 @@ class FirestoreService {
     });
   }
 
-  // Conversations - FIXED: Added error handling for index issues
-// In FirestoreService class - Update the getConversations method:
+  Future<void> createGroup({
+    required String name,
+    required String description,
+    required String category,
+    required String location,
+    required String creatorId,
+  }) async {
+    try {
+      final groupId = _firestore.collection('groups').doc().id;
+      final groupData = {
+        'id': groupId,
+        'name': name,
+        'description': description,
+        'category': category,
+        'location': location,
+        'creatorId': creatorId,
+        'memberCount': 1,
+        'members': [creatorId],
+        'color': _getCategoryColor(category),
+        'createdAt': FieldValue.serverTimestamp(),
+        'logoUrl': '', 
+      };
+      
+      await _firestore.collection('groups').doc(groupId).set(groupData);
+      
+
+      await _firestore.collection('groups').doc(groupId).collection('members').doc(creatorId).set({
+        'userId': creatorId,
+        'role': 'admin',
+        'joinedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error creating group: $e');
+      rethrow;
+    }
+  }
+
+  Stream<List<Group>> getUserGroups(String userId) {
+    return _firestore
+        .collection('groups')
+        .where('members', arrayContains: userId)
+        .snapshots()
+        .map((snapshot) {
+      return snapshot.docs.map((doc) {
+        try {
+          return Group.fromFirestore(doc);
+        } catch (e) {
+          print('Error parsing group ${doc.id}: $e');
+          return Group(
+            id: doc.id,
+            name: 'Group',
+            description: 'Group description',
+            category: 'guild',
+            color: Colors.blue,
+            memberCount: 0,
+            location: 'Location',
+          );
+        }
+      }).toList();
+    });
+  }
+
+  Future<void> joinGroup(String groupId, String userId) async {
+    try {
+      await _firestore.collection('groups').doc(groupId).update({
+        'members': FieldValue.arrayUnion([userId]),
+        'memberCount': FieldValue.increment(1),
+      });
+      
+      await _firestore.collection('groups').doc(groupId).collection('members').doc(userId).set({
+        'userId': userId,
+        'role': 'member',
+        'joinedAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error joining group: $e');
+      rethrow;
+    }
+  }
+
+  String _getCategoryColor(String category) {
+    switch (category.toLowerCase()) {
+      case 'guild': return 'blue';
+      case 'business': return 'orange';
+      case 'tech': return 'purple';
+      case 'creative': return 'pink';
+      case 'community': return 'green';
+      default: return 'blue';
+    }
+  }
+
+
 Stream<List<Conversation>> getConversations(String userId) {
   print('FirestoreService: Getting conversations for user: $userId');
   
@@ -892,7 +973,7 @@ Stream<List<Conversation>> getConversations(String userId) {
       .snapshots()
       .handleError((error) {
         print('FirestoreService: Stream error: $error');
-        throw error; // Re-throw to let the UI handle it
+        throw error; 
       })
       .map((snapshot) {
         print('FirestoreService: Raw snapshot with ${snapshot.docs.length} documents');
@@ -904,7 +985,7 @@ Stream<List<Conversation>> getConversations(String userId) {
             return Conversation.fromFirestore(doc);
           } catch (e) {
             print('FirestoreService: Error parsing conversation ${doc.id}: $e');
-            // Return a default conversation instead of throwing
+
             return Conversation(
               id: doc.id,
               participants: [],
@@ -915,8 +996,7 @@ Stream<List<Conversation>> getConversations(String userId) {
             );
           }
         }).toList();
-        
-        // Sort by lastMessageTime locally
+
         conversations.sort((a, b) => b.lastMessageTime.compareTo(a.lastMessageTime));
         
         print('FirestoreService: Returning ${conversations.length} conversations');
@@ -956,7 +1036,7 @@ Stream<List<Conversation>> getConversations(String userId) {
   }
 }
 
-// ========== UPDATED DATA SERVICE ==========
+// ========== DATA SERVICE ==========
 class DataService {
   static final FirebaseAuthService _authService = FirebaseAuthService();
   static final FirestoreService _firestoreService = FirestoreService();
@@ -983,7 +1063,6 @@ class DataService {
     await _authService.signOut();
   }
 
-  // Firestore data streams
   static Stream<List<Job>> getJobs() => _firestoreService.getJobs();
   static Stream<List<Post>> getPosts() => _firestoreService.getPosts();
   static Stream<List<Group>> getGroups() => _firestoreService.getGroups();
@@ -991,7 +1070,6 @@ class DataService {
   static Stream<List<MarketplaceItem>> getMarketplaceItems() => _firestoreService.getMarketplaceItems();
   static Stream<List<Conversation>> getConversations(String userId) => _firestoreService.getConversations(userId);
 
-  // Post interactions
   static Future<void> likePost(String postId, String userId) async {
     await _firestoreService.likePost(postId, userId);
   }
@@ -1012,7 +1090,6 @@ class DataService {
     await _firestoreService.addPost(post);
   }
 
-  // Messaging
   static Future<void> sendMessage(String conversationId, String message, String senderId) async {
     await _firestoreService.sendMessage(conversationId, message, senderId);
   }
@@ -1027,9 +1104,41 @@ class DataService {
       await _firestoreService.updateUserProfile(user.uid, updates);
     }
   }
-}
 
-// ========== ENHANCED ANIMATED SPLASH SCREEN ==========
+  static Future<void> createGroup({
+    required String name,
+    required String description,
+    required String category,
+    required String location,
+  }) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await _firestoreService.createGroup(
+        name: name,
+        description: description,
+        category: category,
+        location: location,
+        creatorId: user.uid,
+      );
+    }
+  }
+
+  static Stream<List<Group>> getUserGroups() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      return _firestoreService.getUserGroups(user.uid);
+    }
+    return Stream.value([]);
+  }
+
+  static Future<void> joinGroup(String groupId) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await _firestoreService.joinGroup(groupId, user.uid);
+    }
+  }
+}
+// ========== ANIMATED SPLASH SCREEN ==========
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -1087,7 +1196,6 @@ class _SplashScreenState extends State<SplashScreen>
     );
     _controller.forward();
     Future.delayed(const Duration(seconds: 3), () {
-      // Check if user is already logged in
       if (FirebaseAuth.instance.currentUser != null) {
         Navigator.pushReplacement(
           context,
@@ -1279,7 +1387,7 @@ PageRouteBuilder<T> slideInRoute<T>(Widget page) {
   );
 }
 
-// ========== ENHANCED LOGIN SCREEN ==========
+// ========== LOGIN SCREEN ==========
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -1363,7 +1471,7 @@ class _LoginScreenState extends State<LoginScreen>
       _isLoading = false;
     });
     if (error == null) {
-      // Success - navigate to home screen
+
       Navigator.pushReplacement(
         context,
         slideInRoute(const HomeScreen()),
@@ -1880,7 +1988,7 @@ class _LoginScreenState extends State<LoginScreen>
   }
 }
 
-// ========== ENHANCED HOME SCREEN ==========
+// ========== HOME SCREEN ==========
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -1896,7 +2004,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   final List<Widget> _screens = [
     const GuildScreen(),
     const JobsScreen(),
-    Container(), // Placeholder for FAB
+    Container(), 
     const InboxScreen(),
     const ProfileScreen(),
   ];
@@ -2081,7 +2189,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 }
 
-// ========== CREATE OPTIONS FULL SCREEN - COMPLETELY REDESIGNED ==========
+// ========== CREATE OPTIONS FULL SCREEN  ==========
 class CreateOptionsScreen extends StatelessWidget {
   const CreateOptionsScreen({super.key});
 
@@ -2440,6 +2548,7 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _locationController = TextEditingController();
   String _selectedCategory = 'guild';
   bool _isLoading = false;
 
@@ -2447,51 +2556,56 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
   void dispose() {
     _nameController.dispose();
     _descriptionController.dispose();
+    _locationController.dispose();
     super.dispose();
   }
 
-  Future<void> _createCommunity() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
+Future<void> _createCommunity() async {
+  if (_formKey.currentState!.validate()) {
+    setState(() {
+      _isLoading = true;
+    });
 
-      try {
-        // TODO: Implement your DataService.createGroup method
-        // await DataService.createGroup(
-        //   name: _nameController.text.trim(),
-        //   description: _descriptionController.text.trim(),
-        //   category: _selectedCategory,
-        // );
+    try {
+ 
+      await DataService.createGroup( 
+        name: _nameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        category: _selectedCategory,
+        location: _locationController.text.trim().isNotEmpty 
+            ? _locationController.text.trim() 
+            : 'Online Community',
+      );
 
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Community created successfully!'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.pop(context);
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error creating community: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-        }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Community created successfully!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create community: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }
-
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2520,7 +2634,7 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
+                
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -2574,9 +2688,9 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
                 ),
                 const SizedBox(height: 32),
 
-                // Community Name
+                
                 Text(
-                  'Community Name',
+                  'Community Name *',
                   style: GoogleFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -2617,9 +2731,8 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Community Description
                 Text(
-                  'Description',
+                  'Description *',
                   style: GoogleFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -2661,9 +2774,41 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // Category Selection
                 Text(
-                  'Category',
+                  'Location',
+                  style: GoogleFonts.roboto(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextFormField(
+                  controller: _locationController,
+                  decoration: InputDecoration(
+                    hintText: 'e.g., Cape Town, South Africa or Online',
+                    hintStyle: TextStyle(color: Colors.grey.shade400),
+                    filled: true,
+                    fillColor: Colors.grey.shade50,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.shade200),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.blue.shade600, width: 2),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  ),
+                ),
+                const SizedBox(height: 24),
+
+                Text(
+                  'Category *',
                   style: GoogleFonts.roboto(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -2714,6 +2859,17 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
                                       : Colors.grey.shade700,
                                 ),
                               ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Professional network',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _selectedCategory == 'guild'
+                                      ? Colors.blue.shade600
+                                      : Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ],
                           ),
                         ),
@@ -2761,6 +2917,137 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
                                       : Colors.grey.shade700,
                                 ),
                               ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Entrepreneurs & startups',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _selectedCategory == 'business'
+                                      ? Colors.orange.shade600
+                                      : Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = 'tech';
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: _selectedCategory == 'tech'
+                                ? Colors.purple.shade50
+                                : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _selectedCategory == 'tech'
+                                  ? Colors.purple.shade600
+                                  : Colors.grey.shade200,
+                              width: 2,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.code,
+                                color: _selectedCategory == 'tech'
+                                    ? Colors.purple.shade600
+                                    : Colors.grey.shade600,
+                                size: 32,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Tech',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: _selectedCategory == 'tech'
+                                      ? Colors.purple.shade700
+                                      : Colors.grey.shade700,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Technology & coding',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _selectedCategory == 'tech'
+                                      ? Colors.purple.shade600
+                                      : Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategory = 'creative';
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: _selectedCategory == 'creative'
+                                ? Colors.pink.shade50
+                                : Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: _selectedCategory == 'creative'
+                                  ? Colors.pink.shade600
+                                  : Colors.grey.shade200,
+                              width: 2,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.brush,
+                                color: _selectedCategory == 'creative'
+                                    ? Colors.pink.shade600
+                                    : Colors.grey.shade600,
+                                size: 32,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Creative',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: _selectedCategory == 'creative'
+                                      ? Colors.pink.shade700
+                                      : Colors.grey.shade700,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Art & design',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _selectedCategory == 'creative'
+                                      ? Colors.pink.shade600
+                                      : Colors.grey.shade600,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
                             ],
                           ),
                         ),
@@ -2770,7 +3057,6 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
                 ),
                 const SizedBox(height: 40),
 
-                // Create Button
                 SizedBox(
                   width: double.infinity,
                   height: 56,
@@ -2811,7 +3097,7 @@ class _CreateCommunityScreenState extends State<CreateCommunityScreen> {
   }
 }
 
-// ========== MODIFIED GUILD SCREEN - REMOVED GROUPS ==========
+// ========== GUILD SCREEN==========
 class GuildScreen extends StatefulWidget {
   const GuildScreen({super.key});
 
@@ -3270,7 +3556,7 @@ class MarketplaceScreen extends StatelessWidget {
   const MarketplaceScreen({super.key});
 
   void _openSellFlow(BuildContext context) {
-    // Option 1: Show a bottom sheet (no route needed)
+
     showModalBottomSheet(
       context: context,
       shape: const RoundedRectangleBorder(
@@ -3300,8 +3586,8 @@ class MarketplaceScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pop(context); // close bottom sheet
-                  // Navigate to your existing Sell screen
+                  Navigator.pop(context); 
+ 
                   Navigator.pushNamed(context, '/sell');
                 },
                 style: ElevatedButton.styleFrom(
@@ -3433,7 +3719,7 @@ class _MarketplaceItemCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Optional: Navigate to item detail
+        
       },
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
@@ -3454,7 +3740,7 @@ class _MarketplaceItemCard extends StatelessWidget {
             children: [
               Expanded(
                 child: FadeInImage(
-                  placeholder: const AssetImage('assets/placeholder.png'), // optional
+                  placeholder: const AssetImage('assets/placeholder.png'),
                   image: NetworkImage(
                     item.images.isNotEmpty
                         ? item.images.first.trim()
@@ -3524,7 +3810,7 @@ class _MarketplaceItemCard extends StatelessWidget {
   }
 }
 
-// ========== ENHANCED POST CARD ==========
+// ========== POST CARD ==========
 class PostCard extends StatefulWidget {
   final Post post;
   const PostCard({super.key, required this.post});
@@ -3745,7 +4031,7 @@ class _PostCardState extends State<PostCard> with SingleTickerProviderStateMixin
   }
 }
 
-// ========== ENHANCED CREATE POST SCREEN ==========
+// ========== CREATE POST SCREEN ==========
 class EnhancedCreatePostScreen extends StatefulWidget {
   const EnhancedCreatePostScreen({super.key});
 
@@ -4288,31 +4574,28 @@ class RemoteJobCard extends StatelessWidget {
 
 Future<void> _applyForJob(BuildContext context, RemoteJob job) async {
   try {
-    // Clean and validate URL
     String urlString = job.url.trim();
     
-    // Ensure URL has a scheme
     if (!urlString.startsWith('http://') && !urlString.startsWith('https://')) {
       urlString = 'https://$urlString';
     }
     
-    print('Attempting to launch URL: $urlString'); // Debug log
+    print('Attempting to launch URL: $urlString');
     
     final uri = Uri.parse(urlString);
     
-    // Launch directly without checking canLaunchUrl
     final launched = await launchUrl(
       uri,
       mode: LaunchMode.externalApplication,
     );
     
-    print('Launch result: $launched'); // Debug log
+    print('Launch result: $launched');
     
     if (!launched) {
       throw Exception('Failed to launch URL');
     }
   } catch (e) {
-    print('URL Launch Error: $e'); // Debug log
+    print('URL Launch Error: $e'); 
     
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -4533,7 +4816,7 @@ Future<void> _applyForJob(BuildContext context, RemoteJob job) async {
   }
 }
 
-// ========== UPDATED JOBS SCREEN WITH REMOTIVE API ==========
+// ========== JOBS SCREEN WITH REMOTIVE API ==========
 class JobsScreen extends StatelessWidget {
   const JobsScreen({super.key});
 
@@ -4687,9 +4970,8 @@ class JobsScreen extends StatelessWidget {
   }
 }
 
-// ========== REMOTE JOB CARD FOR REMOTIVE API ==========
 
-// ========== FULLY IMPLEMENTED INBOX SCREEN WITH CHAT ==========
+// ========== INBOX SCREEN WITH CHAT ==========
 class InboxScreen extends StatelessWidget {
   const InboxScreen({super.key});
 
@@ -5080,7 +5362,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
     try {
       await DataService.sendMessage(widget.conversationId, message, _currentUserId!);
-      // Scroll to bottom when new message is sent
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
         duration: const Duration(milliseconds: 300),
@@ -5094,7 +5375,6 @@ class _ChatScreenState extends State<ChatScreen> {
           backgroundColor: Colors.red,
         ),
       );
-      // Restore the message if sending failed
       _messageController.text = message;
     }
   }
@@ -5365,7 +5645,7 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 }
-// ========== FULLY IMPLEMENTED PROFILE SCREEN ==========
+// ========== PROFILE SCREEN ==========
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -5637,7 +5917,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-// ========== ENHANCED COMMENTS BOTTOM SHEET WITH REPLY FEATURES ==========
+// ========== COMMENTS BOTTOM SHEET ==========
 class CommentsBottomSheet extends StatefulWidget {
   final Post post;
   const CommentsBottomSheet({super.key, required this.post});
@@ -5760,7 +6040,6 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
       await DataService.replyToComment(widget.post.id, _replyingToCommentId!, reply);
       _replyController.clear();
       
-      // Auto-expand replies after adding a new one
       setState(() {
         _expandedReplies[_replyingToCommentId!] = true;
       });
@@ -5830,7 +6109,6 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
             ),
             child: Column(
               children: [
-                // Header
                 Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
@@ -5857,7 +6135,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
                   ),
                 ),
                 
-                // Comments List
+
                 Expanded(
                   child: StreamBuilder<List<Post>>(
                     stream: DataService.getPosts(),
@@ -5920,7 +6198,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
                   ),
                 ),
                 
-                // Comment/Reply Input Section with proper padding to avoid navigation buttons
+              
                 Container(
                   padding: EdgeInsets.fromLTRB(
                     16, 
@@ -6064,7 +6342,6 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Main Comment
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -6075,7 +6352,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Comment Header with User Info
+  
                 Row(
                   children: [
                     CircleAvatar(
@@ -6112,7 +6389,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
                         ],
                       ),
                     ),
-                    // Like Button
+                 
                     GestureDetector(
                       onTap: () {
                         final user = FirebaseAuth.instance.currentUser;
@@ -6159,14 +6436,14 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
                   ],
                 ),
                 
-                // Comment Content
+             
                 const SizedBox(height: 10),
                 Text(
                   comment.content,
                   style: const TextStyle(fontSize: 14, height: 1.4),
                 ),
                 
-                // Reply Button and Reply Count
+          
                 const SizedBox(height: 10),
                 Row(
                   children: [
@@ -6239,7 +6516,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
             ),
           ),
           
-          // Replies Section
+     
           if (hasReplies) ...[
             const SizedBox(height: 8),
             Padding(
@@ -6247,7 +6524,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Show first reply or all replies if expanded
+              
                   if (!isExpanded) ...[
                     _buildReplyItem(comment.replies.first),
                     if (replyCount > 1) ...[
@@ -6284,7 +6561,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet>
                       ),
                     ],
                   ] else ...[
-                    // Show all replies
+                  
                     ...comment.replies.map((reply) => Padding(
                       padding: const EdgeInsets.only(bottom: 8),
                       child: _buildReplyItem(reply),
